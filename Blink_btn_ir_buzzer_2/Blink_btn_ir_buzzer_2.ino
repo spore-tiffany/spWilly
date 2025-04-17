@@ -1,22 +1,106 @@
-int ledPin = 2;
-int btnPin = 10;
-int buzrPin =13;
-int irPin =12;
+#include "config.h"
+
+
+
+
+
+
 int irFlag = 0;
+int fastLEDFlag = 0;
+unsigned long fastLEDTime = 0;
 
 void setup() {
   //output,input
-  pinMode(ledPin, OUTPUT);
-  pinMode(btnPin, INPUT_PULLUP);
-  pinMode(irPin,INPUT);
-  pinMode(buzrPin,OUTPUT);
-  Serial.begin(9600);
-  Serial.println("hello world");
-  Serial.println("setup");
+  irsetup();
+  buzsetup();
+  ledsetup();
+  sersetup();
+  btnsetup();
+  fastLEDsetup();
+
+  
+  ledAlert(10,100);
   playSong(15);
 }
+void handleCmd(String cmd)
+{
+  if(cmd =="1")
+  {
+    ledAlert(10,100);
+  }
+  else if(cmd == "2")
+  {
+    playSong(15);
+  }
+  else if(cmd == "3")
+  {
+    fastLEDFlag = fastLEDFlag + 1;
+    fastLEDFlag = fastLEDFlag % 4;
+    fastLEDTime = millis();
+    Serial.print("fastLEDFlag = ");
+    Serial.println(fastLEDFlag);
 
-void loop() {
+    /*
+    if(fastLEDFlag==0)
+    {
+      fastLEDFlag = 1;
+    }
+    else if(fastLEDFlag==1){
+      fastLEDFlag = 2;
+    }
+    else if(fastLEDFlag==2){
+      fastLEDFlag = 0;
+    }
+    */
+  }
+  else if(cmd == "4")
+  {
+    changeBrightness(10);
+  }
+  else if(cmd == "5")
+  {
+    changeBrightness(-10);
+  }
+}
+void handleSerInput()
+{
+  String str =  hwSerialRead();
+  if(str != "")
+  {
+    Serial.print("str=");
+    Serial.println(str);
+    handleCmd(str);
+    
+
+  }
+}
+
+void loop()
+{
+  handleSerInput();
+  if(fastLEDFlag == 0)
+  {
+    disableLED();
+    fastLEDFlag = 1;
+  }
+  else if(fastLEDFlag == 1)
+  {
+  }
+  else if(fastLEDFlag == 2)
+  {
+    fastLEDloop(); 
+  }
+  else if(fastLEDFlag == 3)
+  {
+    if(millis() - fastLEDTime > 5000)
+    {
+      fastLEDFlag = 0;
+    }
+  }
+  
+}
+void loop_() { 
+  fastLEDloop(); 
   //Serial.println("loop");
   //delay(1000); 
   int b = digitalRead(btnPin);
