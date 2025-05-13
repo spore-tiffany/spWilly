@@ -6,7 +6,7 @@
 #define LED_TYPE    WS2811
 #define COLOR_ORDER GRB
 CRGB leds[NUM_LEDS];
-int BRIGHTNESS = 64;
+int BRIGHTNESS = 255;
 
 #define UPDATES_PER_SECOND 100
 
@@ -32,6 +32,10 @@ void changeBrightness(int value)
 
   FastLED.setBrightness(  BRIGHTNESS );
 }
+void setupBrightness(int b)
+{
+  FastLED.setBrightness(  b );
+}
 void fastLEDsetup() {
     delay( 3000 ); // power-up safety delay
     FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
@@ -51,6 +55,10 @@ void disableLED()
 
 void fastLEDloop()
 {
+  if(ledFlag == false)
+  {
+    return;
+  }
     ChangePalettePeriodically();
     
     static uint8_t startIndex = 0;

@@ -1,4 +1,5 @@
-
+#ifndef BASIC_CONFIG_H
+#define BASIC_CONFIG_H
 #define NOTE_B0  31
 #define NOTE_C1  33
 #define NOTE_CS1 35
@@ -185,3 +186,4 @@ int notes = sizeof(melody) / sizeof(melody[0]) / 2;
 int wholenote = (60000 * 4) / tempo;
 
 int divider = 0, noteDuration = 0;
+#endif

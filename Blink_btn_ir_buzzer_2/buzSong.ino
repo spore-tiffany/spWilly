@@ -1,17 +1,36 @@
 #include "basic_config.h"
+
+unsigned long buzTimer = 0;
+int thisNote = 0;
 void playSong(int x) {
+  if(buzFlag == false || thisNote >=x)
+  {
+    thisNote = 0;
+    noTone(buzzer);
+    return;
+  }
   // iterate over the notes of the melody.
   // Remember, the array is twice the number of notes (notes + durations)
   //for (int thisNote = 0; thisNote < notes * 2; thisNote = thisNote + 2) {
-  for (int thisNote = 0; thisNote < x ; thisNote = thisNote + 2) {
+  //for (int thisNote = 0; thisNote < x ; thisNote = thisNote + 2) 
+  {
     int b = digitalRead(btnPin);
     if(b == false)
     {
       Serial.println("press");
       digitalWrite(ledPin, LOW); 
-      break;
+      thisNote = 0;
+      return;
     }
+    if(millis()-buzTimer <noteDuration*0.5)
+    {
+      return;
+    }
+    noTone(buzzer);
+    buzTimer = millis();
 
+
+    
 
 
     // calculates the duration of each note
@@ -29,10 +48,12 @@ void playSong(int x) {
     tone(buzzer, melody[thisNote], noteDuration * 0.9);
 
     // Wait for the specief duration before playing the next note.
-    delay(noteDuration*0.5);
+    //delay(noteDuration*0.5);
 
     // stop the waveform generation before the next note.
-    noTone(buzzer);
+    //noTone(buzzer);
+    thisNote = thisNote + 2;
+    thisNote = thisNote % (notes * 2);
   }
 }
 /*

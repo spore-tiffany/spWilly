@@ -10,8 +10,8 @@ int state = BTN_NONE;
 void btnsetup() {
     // put your setup code here, to run once:
   pinMode(btnPin, INPUT_PULLUP);
-  pinMode(ledPin, OUTPUT);
-  Serial.begin(9600);
+  //pinMode(ledPin, OUTPUT);
+  /*
   for(int i = 0 ; i < 3 ; i++)
   {
     digitalWrite(ledPin, HIGH);
@@ -19,6 +19,8 @@ void btnsetup() {
     digitalWrite(ledPin,LOW);
     delay(300);
   }
+  */
+  ledAlert(3,300);
 }
 int getBtnState()
 {

@@ -1,11 +1,11 @@
 #include "SoftwareSerial.h"
-SoftwareSerial swSerial(2,3);//rx,tx
+//SoftwareSerial swSerial(2,3);//rx,tx
 
 
 void sersetup() {
   // put your setup code here, to run once:
-  //Serial.begin(9600);
-  swSerial.begin(9600);
+  Serial.begin(9600);
+  //swSerial.begin(9600);
   Serial.println("hello world");
   
     
@@ -25,7 +25,7 @@ String hwSerialRead()
 
   return str;
 }
-
+/*
 String swSerialRead()
 {
   String str="";
@@ -41,17 +41,19 @@ String swSerialRead()
 
   return str;
 }
+*/
 void serloop() {
   // put your main code here, to run repeatedly:
   String hwStr = hwSerialRead();
-  String swStr = swSerialRead();
+  //String swStr = swSerialRead();
   if(hwStr !="")
   {
     Serial.print("hwSerial:");
     Serial.println(hwStr);
     //ledAlert(hwStr.length(),150);
-    swSerial.println(hwStr);
+    //swSerial.println(hwStr);
   }
+  /*
   if(swStr !="")
   {
     Serial.print("swSerial:");
@@ -59,4 +61,5 @@ void serloop() {
     ledAlert(swStr.length(),150);
   }
   delay(50);
+  */
 }

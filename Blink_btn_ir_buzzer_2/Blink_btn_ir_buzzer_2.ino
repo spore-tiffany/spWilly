@@ -1,18 +1,27 @@
 #include "config.h"
+#include "basic_config.h"
 
 
 
 
 
+int irFlag = 1;
+int buzFlag = 1;
+int ledFlag = 1;
 
-int irFlag = 0;
-int fastLEDFlag = 0;
+int fastLEDFlag = 2;
 unsigned long fastLEDTime = 0;
-
+int buzTime  = sizeof(melody) / sizeof(melody[0]);
+int scenario = 1;
+int irState = 0;
+unsigned long detectTimer = 0;
 void setup() {
+  
+  
+  Serial.begin(9600);
   //output,input
   irsetup();
-  buzsetup();
+  //buzsetup();
   ledsetup();
   sersetup();
   btnsetup();
@@ -20,17 +29,18 @@ void setup() {
 
   
   ledAlert(10,100);
-  playSong(15);
+  playSong(buzTime);
+  mqttSetup();
 }
 void handleCmd(String cmd)
 {
   if(cmd =="1")
   {
-    ledAlert(10,100);
+    ledAlert(20,100);
   }
   else if(cmd == "2")
   {
-    playSong(15);
+    playSong(buzTime);
   }
   else if(cmd == "3")
   {
@@ -61,6 +71,88 @@ void handleCmd(String cmd)
   {
     changeBrightness(-10);
   }
+  else if(cmd >="10" && cmd <="19")
+  {
+    int value = map(cmd.toInt(), 10, 19, 10, 255);
+    setupBrightness(value);
+  }
+   else if(cmd >="20" && cmd <="29")
+  {
+    int value = map(cmd.toInt(), 20, 29, 5, 50);
+    buzTime = value;
+    if(value == 50)
+    {
+      buzTime  = sizeof(melody) / sizeof(melody[0]);
+    }
+  }
+  else if(cmd == "31")
+  {
+    irFlag = true;
+    ledFlag = 1;
+    buzFlag = 1;
+  }
+  else if(cmd == "32")
+  {
+    irFlag = true;
+    ledFlag = 0;
+    buzFlag = 1;
+  }
+  else if(cmd == "33")
+  {
+    irFlag = true;
+    ledFlag = 1;
+    buzFlag = 0;
+  }
+  else if(cmd == "34")
+  {
+    irFlag = true;
+    ledFlag = 0;
+    buzFlag = 0;
+  }
+  else if(cmd == "35")
+  {
+    irFlag = false;
+    ledFlag = 1;
+    buzFlag = 0;
+  }
+  else if(cmd == "36")
+  {
+    irFlag = false;
+    ledFlag = 0;
+    buzFlag = 1;
+  }
+  else if(cmd == "37")
+  {
+    irFlag = false;
+    ledFlag = 0;
+    buzFlag = 0;
+  }
+  else if(cmd == "41")
+  {
+    irFlag = true;
+  }
+  else if(cmd == "42")
+  {
+    irFlag = false;
+  }
+  else if(cmd == "43")
+  {
+    ledFlag = true;
+  }
+  else if(cmd == "44")
+  {
+    ledFlag = false;
+    disableLED();
+  }
+  else if(cmd == "45")
+  {
+    buzFlag = true;
+  }
+  else if(cmd == "46")
+  {
+    buzFlag = false;
+    noTone(buzzer);
+  }
 }
 void handleSerInput()
 {
@@ -75,9 +167,21 @@ void handleSerInput()
   }
 }
 
+int handleIR()
+{
+  int ir = digitalRead(irPin);
+  if(ir == 1)
+  {
+    Serial.println("ir Detected");
+  }
+  return ir;
+}
+
 void loop()
 {
+  mqttLoop();
   handleSerInput();
+  /*
   if(fastLEDFlag == 0)
   {
     disableLED();
@@ -88,6 +192,7 @@ void loop()
   }
   else if(fastLEDFlag == 2)
   {
+    
     fastLEDloop(); 
   }
   else if(fastLEDFlag == 3)
@@ -97,45 +202,56 @@ void loop()
       fastLEDFlag = 0;
     }
   }
-  
-}
-void loop_() { 
-  fastLEDloop(); 
-  //Serial.println("loop");
-  //delay(1000); 
-  int b = digitalRead(btnPin);
-  if(b == false)
+*/
+
+  if(irFlag == false)
   {
-    Serial.println("press");
-    digitalWrite(ledPin, LOW); 
-    //tone(buzrPin,528);
+    fastLEDloop(); 
+    playSong(buzTime);
   }
   else 
   {
-    //Serial.println("No press");
-    digitalWrite(ledPin, HIGH);
-    //noTone(buzrPin);
-  }
-  int ir = digitalRead(irPin);
-  if(ir == true)
-  {
-    
-    if(irFlag == 0)
+    if(handleIR() == true)
     {
-      Serial.println("Detected");
-      playSong(20);
+      
+      if(irState == 0)
+      {
+        
+        irState = 1;
+      }
+      detectTimer = millis();
+      
     }
-    irFlag = 1;
+    else
+    {
+      if(irState == 1 && millis() - detectTimer >5000 )
+      {
+        irState = 2;
+        fastLEDTime = millis();
+      }
+    }
+    if(irState == 0)
+    {
+      noTone(buzzer);
+      disableLED();
+    }
+    else if(irState == 1)
+    {
+      fastLEDloop(); 
+      playSong(buzTime);
+    }
+    else if(irState == 2)
+    {
+      noTone(buzzer);
+      if(millis() - fastLEDTime > 5000)
+      {
+        irState = 0;
+      }
+    }
+    
   }
-  else {
-    irFlag =0;
   
-  }
-
-  /*
-  digitalWrite(ledPin, HIGH);   
-  delay(1000);                      
-  digitalWrite(ledPin, LOW);    
-  delay(1000);  
-  */                    
+  
+  
 }
+
